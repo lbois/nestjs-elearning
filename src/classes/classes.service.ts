@@ -1,4 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { Class } from './class.interface';
 import * as uuid from 'uuid/v1';
 import { CreateClassDto } from './dto/create-class.dto';
@@ -7,69 +9,64 @@ import { GetClassesFilterDto } from './dto/get-classes-filter.dto';
 
 @Injectable()
 export class ClassesService {
+    constructor(
+        @Inject('CLASS_MODEL')
+        private classModel: Model<Class>,
+      ) {}
 private classes: Class[] = [];
 
-getAllClasses() : Class[] {
-    console.log('get All classes');
-    console.log(this.classes.length);
-    return this.classes;
+getAllClasses() : Promise<Class[]> {
+    return this.classModel.find().exec();
 }
 
-getClassesWithFilters(filterDto: GetClassesFilterDto): Class[] {
- console.log('get classes filter');
- console.log(filterDto);
 
+async getClassesWithFilters(filterDto: GetClassesFilterDto): Promise<Class[]> {
+ 
  const {search} = filterDto;
 
  console.log(search);
 
  let classes = this.getAllClasses();
 
- if (search) {
-     console.log('do filtering');
-     classes = classes.filter(_class =>
-        _class.title.includes(search) ||
-        _class.description.includes(search),
-      );
- }
+  return await this.classModel.find({ $or: [ {title: {$regex: '.*' + search + '.*', $options: 'i'}},
+  {description: {$regex: '.*' + search + '.*'  , $options: 'i'}}]
+}).exec();
 
- console.log(classes);
-
- return classes;
+ 
 
 }
 
-createClass(createClassDto: CreateClassDto): Class {
+async createClass(createClassDto: CreateClassDto): Promise<Class> {
 
-    const {title, description} = createClassDto;
+    const createdClass = new this.classModel(createClassDto);
 
-    const _class: Class = {
-        id: uuid(),
-        title,
-        description
-    }
-
-    this.classes.push(_class);
-
-    return _class;
+    return createdClass.save();
 }
 
-getClassById(id: string) {
-    return this.classes.find(_class => _class.id === id);
+
+async getClassById(id: string): Promise<Class[]> {
+    console.log(id);
+    return this.classModel.find({_id: id}).exec();
 }
 
-deleteClass(id: string): void {
-    this.classes = this.classes.filter(_class => _class.id !== id);
+async deleteClass(id: string): Promise<any> {
+    let classes: Class[] = await this.getClassById(id);
+    console.log(classes[0]);
+    
+    await this.classModel.findByIdAndDelete(classes[0]._id);
+
+    return { message: 'Object ' + classes[0]._id + ' removed'};
+
+    
 }
 
-updateClass(id: string, updateClassDto: UpdateClassDto) {
+async updateClass(id: string, updateClassDto: UpdateClassDto): Promise<any> {
   const {title, description } = updateClassDto;
+  
 
-  const _class = this.getClassById(id);
-  _class.title = title;
-  _class.description = description;
-
-  return _class;
+  const updatedObject:any = await this.classModel.findByIdAndUpdate(id, 
+    {title, description});
+  return {id, title, description};
 }
 
 }
