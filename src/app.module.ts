@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
-import { ClassesModule } from './classes/classes.module';
+import { QuizesModule } from './quizes/quizes.module';
 
 import { MongooseModule } from '@nestjs/mongoose';
+import { AuthModule } from './auth/auth.module';
 
 
 @Module({
-  imports: [ClassesModule],
+  imports: [QuizesModule, AuthModule],
   controllers: [],
   providers: [],
 })

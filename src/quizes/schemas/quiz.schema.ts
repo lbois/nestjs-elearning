@@ -1,6 +1,7 @@
 import * as mongoose from 'mongoose';
 
-export const ClassSchema = new mongoose.Schema({
+export const QuizSchema = new mongoose.Schema({
   title: String,
   description: String,
+  author: String,
 });

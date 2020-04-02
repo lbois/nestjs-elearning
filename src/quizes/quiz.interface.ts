@@ -1,7 +1,8 @@
 
 import * as mongoose from 'mongoose';
 
-export interface Class extends mongoose.Document{
+export interface Quiz extends mongoose.Document{
     title: string;
     description: string;
+    author: string;
 }
