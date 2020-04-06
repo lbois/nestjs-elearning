@@ -10,6 +10,7 @@ import { Quiz } from './quiz.interface';
 import { databaseProviders } from '../database.providers';
 import { getModelToken } from '@nestjs/mongoose';
 
+
 const userModel:mongoose.Model<User> =  mongoose.model('User', UserSchema);
 
 const CLASS_MODEL:mongoose.Model<Quiz> =  mongoose.model('Quiz', QuizSchema);
@@ -40,15 +41,15 @@ describe('QuizesService', () => {
         const module = await Test.createTestingModule({
             
             providers: [QuizesService, //...usersProviders, ...quizesProviders,...databaseProviders,
-            {provide: getModelToken('USER_MODEL'), useValue: new mockingUserModel()},
-            {provide: getModelToken('CLASS_MODEL'), useValue: new mockingQuizModel()},
+            {provide: getModelToken('User'), useValue: new mockingUserModel()},
+            {provide: getModelToken('Quiz'), useValue: new mockingQuizModel()},
            // {provide: 'DATABASE_CONNECTION', useFactory: mockingDatabaseConnection},
         ],
         }).compile();
 
         quizesService = module.get<QuizesService>(QuizesService);
-        clientClassModel = module.get(getModelToken('CLASS_MODEL'))
-        clientUserModel =  module.get(getModelToken('USER_MODEL'))
+        clientClassModel = module.get(getModelToken('Quiz'))
+        clientUserModel =  module.get(getModelToken('User'))
         //dbConnection = await module.get<mongoose.Connection>('DATABASE_CONNECTION')
         //console.log(classModel);
         // console.log(clientClassModel);
@@ -61,8 +62,6 @@ describe('QuizesService', () => {
             clientUserModel.find.mockRejectedValue('user not found');
             clientClassModel.find.mockResolvedValue([{title: 'test', description: 'test'}])
             
-           //jest.spyOn(clientUserModel, 'find');
-           // jest.spyOn(clientClassModel, 'find');
            expect(clientUserModel.find).not.toHaveBeenCalled();
            expect(clientClassModel.find).not.toHaveBeenCalled();
            const result = quizesService.getAllQuizes(mockUser).catch((err)=>{
@@ -70,7 +69,6 @@ describe('QuizesService', () => {
            });
            expect(clientUserModel.find).toHaveBeenCalled();
 
-           // expect(clientClassModel.find).toHaveBeenCalled();
            
            
         })
@@ -79,8 +77,6 @@ describe('QuizesService', () => {
             clientUserModel.find.mockReturnValue({_id:'1234', username:'Test user'});
             clientClassModel.find.mockResolvedValue([{title: 'test', description: 'test'}])
             
-           //jest.spyOn(clientUserModel, 'find');
-           // jest.spyOn(clientClassModel, 'find');
            expect(clientUserModel.find).not.toHaveBeenCalled();
            expect(clientClassModel.find).not.toHaveBeenCalled();
            const result =  quizesService.getAllQuizes(mockUser).then(state=> {

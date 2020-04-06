@@ -6,21 +6,29 @@ import { GetQuizesFilterDto } from './dto/get-quizes-filter.dto';
 import { CreateQuizDto } from './dto/create-quiz.dto';
 import { UpdateQuizDto } from './dto/update-quiz.dto';
 import { User } from 'src/auth/user.interface';
+import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
 export class QuizesService {
     constructor(
-        @Inject('CLASS_MODEL')
+        @InjectModel('Quiz')
         private classModel: Model<Quiz>,
-        @Inject('USER_MODEL')
+        @InjectModel('User')
         private userModel: Model<User>
       ) {}
 
 async getAllQuizes(user: User) : Promise<Quiz[]> {
-  // console.log(user);
+    // console.log('-getAllQuizes: user ' + JSON.stringify(user));
+    let userId;
+    try {
     const userEntity = await this.userModel.find({username: user.username}).exec();
-console.log(userEntity[0]);
-    return this.classModel.find({user: userEntity[0]._id}).exec();
+    userId = userEntity[0]._id;
+    // console.log('-getAllQuizes: After find user _id: ' + user);
+    } catch (error) {
+      throw new NotFoundException('user not found');
+    
+    }
+    return await this.classModel.find({user: userId}).exec();
     
 }
 

@@ -5,11 +5,12 @@ import { User } from './user.interface';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './jwt-payload.interface';
+import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
 export class AuthService {
     constructor(
-        @Inject('USER_MODEL')
+        @InjectModel('User')
         private userModel: Model<User>,
         private jwtService: JwtService
       ) {}

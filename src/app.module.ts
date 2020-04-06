@@ -3,10 +3,13 @@ import { QuizesModule } from './quizes/quizes.module';
 
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
+import { QuestionsModule } from './questions/questions.module';
 
 
 @Module({
-  imports: [QuizesModule, AuthModule],
+  imports: [
+    MongooseModule.forRoot('mongodb://localhost/quiz-challenge'),
+    QuizesModule, AuthModule, QuestionsModule],
   controllers: [],
   providers: [],
 })
