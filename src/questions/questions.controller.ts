@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Get, Query, Delete, Param, Patch } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get, Query, Delete, Param, Patch, ValidationPipe, UsePipes } from '@nestjs/common';
 import { CreateQuestionsDto } from './dto/create-questions.dto';
 import { Question } from './question.interface';
 import { AuthGuard } from '@nestjs/passport';
@@ -24,6 +24,7 @@ export class QuestionsController {
     }
     
     @Post()
+    @UsePipes(ValidationPipe)
     async createQuestions(@Body() createQuestionsDto:CreateQuestionsDto,
     ): Promise<Question> {
         return await this.questionsService.createQuestions(createQuestionsDto);

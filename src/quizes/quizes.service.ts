@@ -1,4 +1,4 @@
-import { Injectable, Inject, UseGuards, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, UseGuards, NotFoundException, BadRequestException } from '@nestjs/common';
 import { Model } from 'mongoose';
 import * as mongoose from 'mongoose';
 import { Quiz } from './quiz.interface';
@@ -60,10 +60,12 @@ async createQuiz(createQuizDto: CreateQuizDto, user: User): Promise<Quiz> {
 }
 
 
-async getQuizById(id: string, user:User): Promise<Quiz[]> {
-      
+async getQuizById(id: string, user:User): Promise<Quiz> {
+    if (!mongoose.isValidObjectId(id))
+    { throw new BadRequestException('Id is not valid'); }
+
     const userEntity = await this.userModel.find({username: user.username}).exec();
-    const found = await this.classModel.find({_id: id, user: userEntity[0]._id}).exec();
+    const found = await this.classModel.find({_id: new mongoose.mongo.ObjectID(id), user: userEntity[0]._id}).exec();
 
     // console.log(found);
 
@@ -72,23 +74,26 @@ async getQuizById(id: string, user:User): Promise<Quiz[]> {
       throw new NotFoundException('Quiz not found');
     }
 
-    return found;
+    return found[0];
 }
 
 async deleteQuiz(id: string, user: User): Promise<any> {
-    let quizes: Quiz[] = await this.getQuizById(id, user);
+  
+  
+  let quiz: Quiz = await this.getQuizById(id, user);
+
     
     const userEntity = await this.userModel.find({username: user.username}).exec();
-    await this.classModel.findOneAndDelete({_id: new mongoose.mongo.ObjectID(quizes[0]._id), user: userEntity[0]._id});
+    await this.classModel.findOneAndDelete({_id: new mongoose.mongo.ObjectID(quiz._id), user: userEntity[0]._id});
 
-    return { message: 'Object ' + quizes[0]._id + ' removed'};
+    return { message: 'Object ' + quiz._id + ' removed'};
 
     
 }
 
 async updateQuiz(id: string, updateQuizDto: UpdateQuizDto, user: User): Promise<any> {
   const {title, description , author} = updateQuizDto;
-  
+  let quiz: Quiz = await this.getQuizById(id, user);
   const userEntity = await this.userModel.find({username: user.username}).exec();
     
 

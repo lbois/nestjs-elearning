@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, Patch, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Patch, Query, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { QuizesService } from './quizes.service';
 import { Quiz } from './quiz.interface';
 import { GetQuizesFilterDto } from './dto/get-quizes-filter.dto';
@@ -14,7 +14,7 @@ export class QuizesController {
     constructor(private quizesService: QuizesService) {}
 
     @Get()
-    async getQuizes(@Query() filterDto: GetQuizesFilterDto, @GetUser() user: User): Promise<Quiz[]> {
+    async getQuizes(@Query(ValidationPipe) filterDto: GetQuizesFilterDto, @GetUser() user: User): Promise<Quiz[]> {
         
         if (Object.keys(filterDto).length) {
             return await this.quizesService.getQuizesWithFilters(filterDto, user);
@@ -26,6 +26,7 @@ export class QuizesController {
     }
 
     @Post()
+    @UsePipes(ValidationPipe)
     async createQuiz(@Body() createQuizDto:CreateQuizDto,
     @GetUser() user: User): Promise<Quiz> {
         return await this.quizesService.createQuiz(createQuizDto, user);
@@ -33,20 +34,21 @@ export class QuizesController {
 
     
     @Get(':id')
-    async getQuizById(@Param('id') id: string, @GetUser() user: User): Promise<Quiz[]> {
+    async getQuizById(@Param('id') id: string, @GetUser() user: User): Promise<Quiz> {
         return await this.quizesService.getQuizById(id, user);
     }
 
     
     @Delete(':id')
-    deleteQuiz(@Param('id') id: string, @GetUser() user:User): void {
-        this.quizesService.deleteQuiz(id, user);
+    async deleteQuiz(@Param('id') id: string, @GetUser() user:User): Promise<void> {
+        await this.quizesService.deleteQuiz(id, user);
         
 
     }
 
     
     @Patch('/:id')
+    @UsePipes(ValidationPipe)
     async updateQuiz(@Param('id') id: string, @Body() updateQuizDto: UpdateQuizDto,
     @GetUser() user: User): Promise<any> {
         return await this.quizesService.updateQuiz(id, updateQuizDto, user);
