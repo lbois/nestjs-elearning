@@ -77,10 +77,8 @@ async getQuizById(id: string, user:User): Promise<Quiz[]> {
 
 async deleteQuiz(id: string, user: User): Promise<any> {
     let quizes: Quiz[] = await this.getQuizById(id, user);
-    console.log('*'+quizes[0]._id+'*');
     
     const userEntity = await this.userModel.find({username: user.username}).exec();
-    console.log('*' + userEntity[0]._id+'*');
     await this.classModel.findOneAndDelete({_id: new mongoose.mongo.ObjectID(quizes[0]._id), user: userEntity[0]._id});
 
     return { message: 'Object ' + quizes[0]._id + ' removed'};

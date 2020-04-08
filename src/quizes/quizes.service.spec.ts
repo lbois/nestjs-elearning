@@ -1,13 +1,10 @@
 import { QuizSchema} from './schemas/quiz.schema';
 import { UserSchema } from '../auth/schemas/user.schema';
-import { quizesProviders } from './quizes.providers';
 import { QuizesService } from './quizes.service';
-import { usersProviders } from '../auth/users.providers';
 import { Test } from '@nestjs/testing';
 import * as mongoose from 'mongoose';
 import { User } from 'src/auth/user.interface';
 import { Quiz } from './quiz.interface';
-import { databaseProviders } from '../database.providers';
 import { getModelToken } from '@nestjs/mongoose';
 
 
