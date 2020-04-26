@@ -1,4 +1,4 @@
-import { Injectable, Inject, UseGuards, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, Inject, UseGuards, NotFoundException, BadRequestException, forwardRef } from '@nestjs/common';
 import { Model } from 'mongoose';
 import * as mongoose from 'mongoose';
 import { Quiz } from './quiz.interface';
@@ -7,6 +7,8 @@ import { CreateQuizDto } from './dto/create-quiz.dto';
 import { UpdateQuizDto } from './dto/update-quiz.dto';
 import { User } from 'src/auth/user.interface';
 import { InjectModel } from '@nestjs/mongoose';
+import { Question } from 'src/questions/question.interface';
+import { QuestionsService } from 'src/questions/questions.service';
 
 @Injectable()
 export class QuizesService {
@@ -14,12 +16,12 @@ export class QuizesService {
         @InjectModel('Quiz')
         private classModel: Model<Quiz>,
         @InjectModel('User')
-        private userModel: Model<User>
+        private userModel: Model<User>,
       ) {}
 
-async getAllQuizes(user: User) : Promise<Quiz[]> {
-    // console.log('-getAllQuizes: user ' + JSON.stringify(user));
+async getAllQuizes(user?: User) : Promise<Quiz[]> {
     let userId;
+    if (user)  {
     try {
     const userEntity = await this.userModel.find({username: user.username}).exec();
     userId = userEntity[0]._id;
@@ -28,7 +30,10 @@ async getAllQuizes(user: User) : Promise<Quiz[]> {
       throw new NotFoundException('user not found');
     
     }
-    return await this.classModel.find({user: userId}).exec();
+    return await this.classModel.find({user: userId}).populate('user', 'username -_id').exec();
+  } else {
+    return await this.classModel.find({}).populate('user', 'username -_id').exec();
+  }
     
 }
 
@@ -82,6 +87,9 @@ async deleteQuiz(id: string, user: User): Promise<any> {
   
   let quiz: Quiz = await this.getQuizById(id, user);
 
+  // Suppress children (questions)
+    //await this.questionsService.deleteByQuizId(id);
+
     
     const userEntity = await this.userModel.find({username: user.username}).exec();
     await this.classModel.findOneAndDelete({_id: new mongoose.mongo.ObjectID(quiz._id), user: userEntity[0]._id});
@@ -93,7 +101,7 @@ async deleteQuiz(id: string, user: User): Promise<any> {
 
 async updateQuiz(id: string, updateQuizDto: UpdateQuizDto, user: User): Promise<any> {
   const {title, description , author} = updateQuizDto;
-  let quiz: Quiz = await this.getQuizById(id, user);
+  // let quiz: Quiz = await this.getQuizById(id, user);
   const userEntity = await this.userModel.find({username: user.username}).exec();
     
 

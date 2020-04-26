@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/common';
 import { CreateQuestionsDto } from './dto/create-questions.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -6,6 +6,7 @@ import { Question } from './question.interface';
 import { GetQuestionsFilterDto } from './dto/get-questions-filter.dto';
 import * as mongoose from 'mongoose';
 import { UpdateQuestionsDto } from './dto/update-questions-dto';
+import { QuizesService } from 'src/quizes/quizes.service';
 
 @Injectable()
 export class QuestionsService {
@@ -76,5 +77,10 @@ export class QuestionsService {
         return { message: 'Question ' + id + ' removed'};
 
     
+    }
+
+    async deleteByQuizId(quizId) {
+
+    await this.questionModel.deleteMany({quiz: quizId});
     }
 }

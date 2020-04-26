@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, Patch, Query, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Patch, Query, UseGuards, UsePipes, ValidationPipe, Put } from '@nestjs/common';
 import { QuizesService } from './quizes.service';
 import { Quiz } from './quiz.interface';
 import { GetQuizesFilterDto } from './dto/get-quizes-filter.dto';
@@ -16,6 +16,7 @@ export class QuizesController {
     @Get()
     async getQuizes(@Query(ValidationPipe) filterDto: GetQuizesFilterDto, @GetUser() user: User): Promise<Quiz[]> {
         
+    console.log('-getQuizes: user ' + JSON.stringify(user));
         if (Object.keys(filterDto).length) {
             return await this.quizesService.getQuizesWithFilters(filterDto, user);
         } else {
@@ -29,6 +30,7 @@ export class QuizesController {
     @UsePipes(ValidationPipe)
     async createQuiz(@Body() createQuizDto:CreateQuizDto,
     @GetUser() user: User): Promise<Quiz> {
+        console.log('create quiz');
         return await this.quizesService.createQuiz(createQuizDto, user);
     }
 
@@ -51,6 +53,7 @@ export class QuizesController {
     @UsePipes(ValidationPipe)
     async updateQuiz(@Param('id') id: string, @Body() updateQuizDto: UpdateQuizDto,
     @GetUser() user: User): Promise<any> {
+        console.log('update quiz')
         return await this.quizesService.updateQuiz(id, updateQuizDto, user);
     
     }
